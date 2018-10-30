@@ -1,0 +1,4 @@
+{
+    "board": "arduino:avr:micro",
+    "sketch": "Joystick.ino"
+}
