@@ -30,8 +30,8 @@ void sendDebugMsg(String message) {
 // Returns true if CPPM is synchronised, false if it isn't.
 bool readCPPM(CPPMFrame* frame) {
   if(CPPM.synchronized()) {
-    // Values come in on a scale 1000 to 2000, but we want them on a scale of
-    // -1000 to 2000
+    // Values come in on a scale 1000us to 2000us, but we want them on a scale
+    // of -1000us to 1000us
     frame->roll = 2 * (CPPM.read_us(CPPM_AILE) - 1500);
     frame->pitch = 2 * (CPPM.read_us(CPPM_ELEV) - 1500);
     frame->thr = 2 * (CPPM.read_us(CPPM_THRO) - 1500);
