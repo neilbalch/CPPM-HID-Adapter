@@ -1,13 +1,13 @@
 #include <CPPM.h>
 #include "Joystick.h"
 
-// Debug messages?
+// Debug messages in serial monitor?
 const bool DEBUG = true;
 
 // Create Joystick
 Joystick_ joystick;
 
-// Object to store read CPPM values
+// Stores one set of CPPM channel values
 struct CPPMFrame {
   // Analog sticks (values -1000 to 1000)
   int pitch = 0;
@@ -28,18 +28,18 @@ void sendDebugMsg(String message) {
 }
 
 // Returns true if CPPM is synchronised, false if it isn't.
-// TODO(Neil): make sure this method sets values -1000 to 1000, use map if necessary
 bool readCPPM(CPPMFrame* frame) {
   if(CPPM.synchronized()) {
-    // TODO(Neil): make sure these are mapped to the right channels
+    // Values come in on a scale 1000 to 2000, but we want them on a scale of
+    // -1000 to 2000
     frame->roll = 2 * (CPPM.read_us(CPPM_AILE) - 1500);
     frame->pitch = 2 * (CPPM.read_us(CPPM_ELEV) - 1500);
     frame->thr = 2 * (CPPM.read_us(CPPM_THRO) - 1500);
-    frame->yaw = 2 * CPPM.read_us(CPPM_RUDD) - 1500);
-    frame->aux1 = 2 * CPPM.read_us(CPPM_GEAR) - 1500);
-    frame->aux2 = 2 * CPPM.read_us(CPPM_AUX1) - 1500);
-    frame->aux3 = 2 * CPPM.read_us(CPPM_AUX2) - 1500);
-    frame->aux4 = 2 * CPPM.read_us(CPPM_AUX3) - 1500);
+    frame->yaw = 2 * (CPPM.read_us(CPPM_RUDD) - 1500);
+    frame->aux1 = 2 * (CPPM.read_us(CPPM_GEAR) - 1500);
+    frame->aux2 = 2 * (CPPM.read_us(CPPM_AUX1) - 1500);
+    frame->aux3 = 2 * (CPPM.read_us(CPPM_AUX2) - 1500);
+    frame->aux4 = 2 * (CPPM.read_us(CPPM_AUX3) - 1500);
 
     return true;
   } else {
@@ -49,11 +49,13 @@ bool readCPPM(CPPMFrame* frame) {
 
 // Send joystick data from provided CPPMFrame to USB HID device
 void sendJoystickData(CPPMFrame* frame) {
+  // Send analog sticks
   joystick.setXAxis(frame->thr);
   joystick.setYAxis(frame->pitch);
   joystick.setRxAxis(frame->yaw);
   joystick.setRyAxis(frame->roll);
 
+  // Send buttons
   joystick.setButton(0, frame->aux1);
   joystick.setButton(1, frame->aux2);
   joystick.setButton(2, frame->aux3);
@@ -90,5 +92,6 @@ void loop() {
   }
 
   // Sleep for 50ms
+  // TODO(Neil): Speed this up as fast as possible, joystick must be fed ASAP!
   delay(50);
 }
