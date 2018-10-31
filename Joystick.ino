@@ -18,6 +18,8 @@ struct CPPMFrame {
   // Switches/dials (values -1000 to 1000, usually -1000, 0, or 1000)
   int aux1 = 0;
   int aux2 = 0;
+  int aux3 = 0;
+  int aux4 = 0;
 };
 
 // Control output of debug messages
@@ -30,12 +32,14 @@ void sendDebugMsg(String message) {
 bool readCPPM(CPPMFrame* frame) {
   if(CPPM.synchronized()) {
     // TODO(Neil): make sure these are mapped to the right channels
-    frame->roll = CPPM.read_us(CPPM_AILE) - 1500;
-    frame->pitch = CPPM.read_us(CPPM_ELEV) - 1500;
-    frame->thr = CPPM.read_us(CPPM_THRO) - 1500;
-    frame->yaw = CPPM.read_us(CPPM_RUDD) - 1500;
-    frame->aux1 = CPPM.read_us(CPPM_GEAR) - 1500;
-    frame->aux2 = CPPM.read_us(CPPM_AUX1) - 1500;
+    frame->roll = 2 * (CPPM.read_us(CPPM_AILE) - 1500);
+    frame->pitch = 2 * (CPPM.read_us(CPPM_ELEV) - 1500);
+    frame->thr = 2 * (CPPM.read_us(CPPM_THRO) - 1500);
+    frame->yaw = 2 * CPPM.read_us(CPPM_RUDD) - 1500);
+    frame->aux1 = 2 * CPPM.read_us(CPPM_GEAR) - 1500);
+    frame->aux2 = 2 * CPPM.read_us(CPPM_AUX1) - 1500);
+    frame->aux3 = 2 * CPPM.read_us(CPPM_AUX2) - 1500);
+    frame->aux4 = 2 * CPPM.read_us(CPPM_AUX3) - 1500);
 
     return true;
   } else {
@@ -51,7 +55,9 @@ void sendJoystickData(CPPMFrame* frame) {
   joystick.setRyAxis(frame->roll);
 
   joystick.setButton(0, frame->aux1);
-  joystick.setButton(2, frame->aux2);
+  joystick.setButton(1, frame->aux2);
+  joystick.setButton(2, frame->aux3);
+  joystick.setButton(3, frame->aux4);
 }
 
 void setup() {
