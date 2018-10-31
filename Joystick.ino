@@ -2,7 +2,9 @@
 #include "Joystick.h"
 
 // Debug messages in serial monitor?
-const bool DEBUG = true;
+const bool LOG_DEBUG = true;
+// Enum type for different log levels
+enum LogLevel {DEBUG, CRITICAL};
 
 // Create Joystick
 Joystick_ joystick;
@@ -23,12 +25,13 @@ struct CPPMFrame {
 };
 
 // Control output of debug messages
-void sendDebugMsg(String message) {
-  if(DEBUG) Serial.println(message);
+void sendSerialMsg(LogLevel level, String message) {
+  if(LOG_DEBUG && level == DEBUG) Serial.println(message);
+  if(level = CRITICAL) Serial.println("CRITICAL! " + message);
 }
 
 // Returns true if CPPM is synchronised, false if it isn't.
-bool readCPPM(CPPMFrame* frame) {
+bool readCPPM(CPPMFrame *frame) {
   if(CPPM.synchronized()) {
     // Values come in on a scale 1000us to 2000us, but we want them on a scale
     // of -1000us to 1000us
@@ -48,7 +51,7 @@ bool readCPPM(CPPMFrame* frame) {
 }
 
 // Send joystick data from provided CPPMFrame to USB HID device
-void sendJoystickData(CPPMFrame* frame) {
+void sendJoystickData(CPPMFrame *frame) {
   // Send analog sticks
   joystick.setXAxis(frame->thr);
   joystick.setYAxis(frame->pitch);
@@ -63,32 +66,36 @@ void sendJoystickData(CPPMFrame* frame) {
 }
 
 void setup() {
+  // Init serial monitor
   Serial.begin(9600);
+
+  // Init CPPM reader
   CPPM.begin();
-  sendDebugMsg("CPPM initialized");
+  sendSerialMsg(DEBUG, "CPPM reader initialized");
 
   // Set joystick ranges to RC standard (1000-2000us --> +/- 1000)
   joystick.setXAxisRange(-1000, 1000);  // Throttle
   joystick.setYAxisRange(-1000, 1000);  // Pitch
   joystick.setRxAxisRange(-1000, 1000); // Yaw
   joystick.setRyAxisRange(-1000, 1000); // Roll
-  sendDebugMsg("Joystick ranges set");
+  sendSerialMsg(DEBUG, "Joystick ranges set");
 
   // Start Joystick Emulation
   joystick.begin();
-  sendDebugMsg("Joystick initialized");
+  sendSerialMsg(DEBUG, "Joystick initialized");
 }
 
 void loop() {
   CPPMFrame frame;
 
-  // Read newest CPPM frame
+  // Read newest CPPM frame, detect desyncs
   if(!readCPPM(&frame)) {
-    Serial.println("Err: CPPM signal not synchronised!");
+    sendSerialMsg(CRITICAL, "CPPM signal not synchronised!");
   } else {
-    sendDebugMsg("New CPPM frame read");
+    sendSerialMsg(DEBUG, "New CPPM frame read");
+
     sendJoystickData(&frame);
-    sendDebugMsg("New CPPM frame sent to Joystick HID");
+    sendSerialMsg(DEBUG, "New CPPM frame sent to Joystick HID");
   }
 
   // Sleep for 50ms
