@@ -1,5 +1,6 @@
+#include <thread>
 #include <CPPM.h>
-#include "Joystick.h"
+#include <Joystick.h>
 
 // Debug messages in serial monitor?
 const bool LOG_DEBUG = true;
@@ -8,6 +9,11 @@ enum LogLevel {DEBUG, CRITICAL};
 
 // Create Joystick
 Joystick_ joystick;
+// Greatest possible magnitude of joystick axis
+const int JOYSTICK_RANGE = 1000;
+
+// Set by readCPPM(CPPMFrame) if there is a CPPM desync
+bool cppmDesync = false;
 
 // Stores one set of CPPM channel values
 struct CPPMFrame {
@@ -22,12 +28,36 @@ struct CPPMFrame {
   int aux2 = 0;
   int aux3 = 0;
   int aux4 = 0;
+
+  // Represents member vars in an easily printable form
+  String toString() {
+    return "roll:" + frame->roll +
+    "\tpitch:" + frame->pitch +
+    "\tthrottle:" + frame->throttle +
+    "\tyaw:" + frame->yaw +
+    "\taux1:" + frame->aux1 +
+    "\taux2:" + frame->aux2 +
+    "\taux3:" + frame->aux3 +
+    "\taux4:" + frame->aux4;
+  }
+
+  // Remap data so it matches proper range for joystick
+  void mapDataToJoystickRange() {
+    map(pitch, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+    map(roll, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+    map(thr, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+    map(yaw, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+    map(aux1, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+    map(aux2, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+    map(aux3, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+    map(aux4, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+  }
 };
 
 // Control output of debug messages
 void sendSerialMsg(LogLevel level, String message) {
-  if(LOG_DEBUG && level == DEBUG) Serial.println(message);
-  if(level = CRITICAL) Serial.println("CRITICAL! " + message);
+  if(LOG_DEBUG && level == DEBUG) Serial.println((String)millis() + ": " + message);
+  if(level = CRITICAL) Serial.println((String)millis() + ": CRITICAL! " + message);
 }
 
 // Returns true if CPPM is synchronised, false if it isn't.
@@ -44,14 +74,32 @@ bool readCPPM(CPPMFrame *frame) {
     frame->aux3 = 2 * (CPPM.read_us(CPPM_AUX2) - 1500);
     frame->aux4 = 2 * (CPPM.read_us(CPPM_AUX3) - 1500);
 
+    // Log read data
+    sendSerialMsg(DEBUG, "CPPM Read: " + frame->toString());
+
     return true;
   } else {
+    sendSerialMsg(CRITICAL, "No CPPM read due to desync");
     return false;
   }
 }
 
+// Signal CPPM desync with LED_BUILTIN, only called in ledThread
+void ledControl() {
+  while(true) {
+    if(cppmDesync) digitalWrite(LED_BUILTIN, HIGH);
+    else digitalWrite(LED_BUILTIN, LOW);
+
+    delay(50);
+  }
+
+}
+
 // Send joystick data from provided CPPMFrame to USB HID device
 void sendJoystickData(CPPMFrame *frame) {
+  // Map data to proper ranges
+  frame->mapDataToJoystickRange();
+
   // Send analog sticks
   joystick.setXAxis(frame->thr);
   joystick.setYAxis(frame->pitch);
@@ -63,6 +111,9 @@ void sendJoystickData(CPPMFrame *frame) {
   joystick.setButton(1, frame->aux2);
   joystick.setButton(2, frame->aux3);
   joystick.setButton(3, frame->aux4);
+
+  // Log sent data
+  sendSerialMsg(DEBUG, "Joystick Data Sent: " + frame->toString());
 }
 
 void setup() {
@@ -73,16 +124,22 @@ void setup() {
   CPPM.begin();
   sendSerialMsg(DEBUG, "CPPM reader initialized");
 
-  // Set joystick ranges to RC standard (1000-2000us --> +/- 1000)
-  joystick.setXAxisRange(-1000, 1000);  // Throttle
-  joystick.setYAxisRange(-1000, 1000);  // Pitch
-  joystick.setRxAxisRange(-1000, 1000); // Yaw
-  joystick.setRyAxisRange(-1000, 1000); // Roll
+  // Set joystick ranges
+  joystick.setXAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);  // Throttle
+  joystick.setYAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);  // Pitch
+  joystick.setRxAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE); // Yaw
+  joystick.setRyAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE); // Roll
   sendSerialMsg(DEBUG, "Joystick ranges set");
 
   // Start Joystick Emulation
   joystick.begin();
   sendSerialMsg(DEBUG, "Joystick initialized");
+
+  // Enable board-specific signal LED
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  // Start a thread for ledControl()
+  ::std::thread ledThread(ledControl);
 }
 
 void loop() {
@@ -90,8 +147,10 @@ void loop() {
 
   // Read newest CPPM frame, detect desyncs
   if(!readCPPM(&frame)) {
+    cppmDesync = true;
     sendSerialMsg(CRITICAL, "CPPM signal not synchronised!");
   } else {
+    cppmDesync = false;
     sendSerialMsg(DEBUG, "New CPPM frame read");
 
     sendJoystickData(&frame);
