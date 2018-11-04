@@ -1,4 +1,3 @@
-#include <thread>
 #include <CPPM.h>
 #include <Joystick.h>
 
@@ -11,9 +10,6 @@ enum LogLevel {DEBUG, CRITICAL};
 Joystick_ joystick;
 // Greatest possible magnitude of joystick axis
 const int JOYSTICK_RANGE = 1000;
-
-// Set by readCPPM(CPPMFrame) if there is a CPPM desync
-bool cppmDesync = false;
 
 // Stores one set of CPPM channel values
 struct CPPMFrame {
@@ -84,17 +80,6 @@ bool readCPPM(CPPMFrame *frame) {
   }
 }
 
-// Signal CPPM desync with LED_BUILTIN, only called in ledThread
-void ledControl() {
-  while(true) {
-    if(cppmDesync) digitalWrite(LED_BUILTIN, HIGH);
-    else digitalWrite(LED_BUILTIN, LOW);
-
-    delay(50);
-  }
-
-}
-
 // Send joystick data from provided CPPMFrame to USB HID device
 void sendJoystickData(CPPMFrame *frame) {
   // Map data to proper ranges
@@ -137,9 +122,6 @@ void setup() {
 
   // Enable board-specific signal LED
   pinMode(LED_BUILTIN, OUTPUT);
-
-  // Start a thread for ledControl()
-  ::std::thread ledThread(ledControl);
 }
 
 void loop() {
@@ -147,10 +129,10 @@ void loop() {
 
   // Read newest CPPM frame, detect desyncs
   if(!readCPPM(&frame)) {
-    cppmDesync = true;
+    digitalWrite(LED_BUILTIN, HIGH);
     sendSerialMsg(CRITICAL, "CPPM signal not synchronised!");
   } else {
-    cppmDesync = false;
+    digitalWrite(LED_BUILTIN, LOW);
     sendSerialMsg(DEBUG, "New CPPM frame read");
 
     sendJoystickData(&frame);
