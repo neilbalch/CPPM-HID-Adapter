@@ -23,7 +23,7 @@ void cppm_cycle(void) {
     int aux3 = CPPM.read_us(CPPM_AUX3) - 1500; // aux3
 
     uint32_t now = micros();
-    Serial.print("Cycle time: " + (String)(now - previous) + "\t| ");
+    Serial.print("Cycle time: " + (String)(now - previous) + "us\t| ");
 
 		Serial.print(aile); Serial.print(",\t");
 		Serial.print(elev); Serial.print(",\t");
