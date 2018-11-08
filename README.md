@@ -2,7 +2,7 @@
 
 ## Description
 
-USB Joystick HID adapter for CPPM RC recievers. (*requires microprocesor with native USB support, e.g. Arduino Pro Micro or Arduino Duemilanove*) Dependent upon [`neilbalch/CPPM`](https://github.com/neilbalch/CPPM) specialty fork of [`jmparatte/CPPM`](https://github.com/jmparatte/CPPM) and [`MHeironimus/ArduinoJoystickLibrary`](https://github.com/MHeironimus/ArduinoJoystickLibrary) for CPPM reading and Joystick HID support respectively.
+USB Joystick HID adapter for CPPM RC recievers. (*requires microprocesor with native USB support, e.g. Arduino Pro Micro or Arduino Duemilanove*) Dependent upon [`neilbalch/CPPM`](https://github.com/neilbalch/CPPM) (*specialty fork of [`jmparatte/CPPM`](https://github.com/jmparatte/CPPM)*) and [`MHeironimus/ArduinoJoystickLibrary`](https://github.com/MHeironimus/ArduinoJoystickLibrary) for CPPM reading and Joystick HID support respectively.
 
 ## Repository Map
 
