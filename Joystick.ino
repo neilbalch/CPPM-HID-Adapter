@@ -1,20 +1,31 @@
 #include <CPPM.h>
 #include <Joystick.h>
 
-// Debug messages in serial monitor?
-const bool LOG_DEBUG = false;
+//////////////////////////////////////////////////\
+//                  Constants                     |
+//////////////////////////////////////////////////|
+//|
+// Debug messages in serial monitor?            //|
+const bool LOG_DEBUG = false;  //|
+                               //|
+// Greatest possible magnitude of joystick axis //|
+const int JOYSTICK_RANGE = 1000;  //|
+// Send aux channels to HID buttons or HID axes?//|
+const bool sendAuxChannelsToButttons = false;  //|
+                                               //|
+///////////////////////////////////////////////////
+
 // Enum type for different log levels
-enum LogLevel {DEBUG, CRITICAL};
+enum LogLevel { DEBUG, CRITICAL };
 
 // Create Joystick
 Joystick_ joystick;
-// Greatest possible magnitude of joystick axis
-const int JOYSTICK_RANGE = 1000;
 
 // Stores one set of CPPM channel values
 struct CPPMFrame {
  private:
   bool alreadyMapped = false;
+
  public:
   // Analog sticks (values -1000 to 1000)
   int pitch = 0;
@@ -30,19 +41,16 @@ struct CPPMFrame {
 
   // Represents member vars in an easily printable form
   String toString() {
-    return "roll:" + (String)roll +
-    "\tpitch:" + (String)pitch +
-    "\tthrottle:" + (String)thr +
-    "\tyaw:" + (String)yaw +
-    "\taux1:" + (String)aux1 +
-    "\taux2:" + (String)aux2 +
-    "\taux3:" + (String)aux3 +
-    "\taux4:" + (String)aux4;
+    return "roll:" + (String)roll + "\tpitch:" + (String)pitch +
+           "\tthrottle:" + (String)thr + "\tyaw:" + (String)yaw +
+           "\taux1:" + (String)aux1 + "\taux2:" + (String)aux2 +
+           "\taux3:" + (String)aux3 + "\taux4:" + (String)aux4;
   }
 
   // Remap data so it matches proper range for joystick
   void mapDataToJoystickRange() {
-    if(!alreadyMapped) {
+    if (!alreadyMapped) {
+      // map-em
       map(pitch, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
       map(roll, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
       map(thr, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
@@ -51,6 +59,16 @@ struct CPPMFrame {
       map(aux2, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
       map(aux3, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
       map(aux4, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+
+      // Make doubly sure they're within the right range
+      constrain(pitch, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+      constrain(roll, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+      constrain(thr, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+      constrain(yaw, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+      constrain(aux1, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+      constrain(aux2, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+      constrain(aux3, -JOYSTICK_RANGE, JOYSTICK_RANGE);
+      constrain(aux4, -JOYSTICK_RANGE, JOYSTICK_RANGE);
       alreadyMapped = true;
     }
   }
@@ -61,17 +79,19 @@ CPPMFrame previousFrame;
 
 // Control output of debug messages
 void sendSerialMsg(LogLevel level, String message) {
-  if(LOG_DEBUG && level == DEBUG) Serial.println((String)millis() + ": " + message);
-  if(level == CRITICAL) Serial.println((String)millis() + ": CRITICAL! " + message);
+  if (LOG_DEBUG && level == DEBUG)
+    Serial.println((String)millis() + ": " + message);
+  if (level == CRITICAL)
+    Serial.println((String)millis() + ": CRITICAL! " + message);
 }
 
 // Returns true if CPPM is synchronised, false if it isn't.
 bool readCPPM(CPPMFrame *frame) {
-  if(CPPM.synchronized()) {
+  if (CPPM.synchronized()) {
     // Values come in on a scale 1000us to 2000us, but we want them on a scale
     // of -1000us to 1000us
     frame->roll = 2 * (CPPM.read_us(CPPM_AILE) - 1500);
-    frame->pitch = -2 * (CPPM.read_us(CPPM_ELEV) - 1500); // Requires Inversion
+    frame->pitch = -2 * (CPPM.read_us(CPPM_ELEV) - 1500);  // Requires Inversion
     frame->thr = 2 * (CPPM.read_us(CPPM_THRO) - 1500);
     frame->yaw = 2 * (CPPM.read_us(CPPM_RUDD) - 1500);
     frame->aux1 = 2 * (CPPM.read_us(CPPM_GEAR) - 1500);
@@ -108,63 +128,74 @@ void sendJoystickData(CPPMFrame *frame) {
   joystick.setXAxis(frame->roll);
   joystick.setYAxis(frame->pitch);
   joystick.setRxAxis(frame->yaw);
-  joystick.setRyAxis(frame->thr);
+  joystick.setThrottle(frame->thr);
 
-  // Send buttons
-  if(frame->aux1 < 0) {
-    joystick.setButton(0, 1);
-    joystick.setButton(1, 0);
-    joystick.setButton(2, 0);
-  } else if(frame->aux1 > -5 && frame->aux1 < 5) {
-    joystick.setButton(0, 0);
-    joystick.setButton(1, 1);
-    joystick.setButton(2, 0);
+  // Send aux channels
+  if (!sendAuxChannelsToButttons) {
+    joystick.setZAxis(frame->aux1);
+    joystick.setRzAxis(frame->aux2);
+    joystick.setRyAxis(frame->aux3);
+    joystick.setSteering(
+        frame->aux4);  // TODO(Neil): Figure out how to make this channel work
+                       // (currently not displayed in HID)
   } else {
-    joystick.setButton(0, 0);
-    joystick.setButton(1, 0);
-    joystick.setButton(2, 1);
-  }
+    if (frame->aux1 < 0) {
+      joystick.setButton(0, 1);
+      joystick.setButton(1, 0);
+      joystick.setButton(2, 0);
+    } else if (frame->aux1 > -5 && frame->aux1 < 5) {
+      joystick.setButton(0, 0);
+      joystick.setButton(1, 1);
+      joystick.setButton(2, 0);
+    } else {
+      joystick.setButton(0, 0);
+      joystick.setButton(1, 0);
+      joystick.setButton(2, 1);
+    }
 
-  if(frame->aux2 < 0) {
-    joystick.setButton(3, 1);
-    joystick.setButton(4, 0);
-    joystick.setButton(5, 0);
-  } else if(frame->aux2 > -5 && frame->aux2 < 5) {
-    joystick.setButton(3, 0);
-    joystick.setButton(4, 1);
-    joystick.setButton(5, 0);;
-  } else {
-    joystick.setButton(3, 0);
-    joystick.setButton(4, 0);
-    joystick.setButton(5, 1);;
-  }
+    if (frame->aux2 < 0) {
+      joystick.setButton(3, 1);
+      joystick.setButton(4, 0);
+      joystick.setButton(5, 0);
+    } else if (frame->aux2 > -5 && frame->aux2 < 5) {
+      joystick.setButton(3, 0);
+      joystick.setButton(4, 1);
+      joystick.setButton(5, 0);
+      ;
+    } else {
+      joystick.setButton(3, 0);
+      joystick.setButton(4, 0);
+      joystick.setButton(5, 1);
+      ;
+    }
 
-  if(frame->aux3 < 0) {
-    joystick.setButton(6, 1);
-    joystick.setButton(7, 0);
-    joystick.setButton(8, 0);
-  } else if(frame->aux3 > -5 && frame->aux3 < 5) {
-    joystick.setButton(6, 0);
-    joystick.setButton(7, 1);
-    joystick.setButton(8, 0);
-  } else {
-    joystick.setButton(6, 0);
-    joystick.setButton(7, 0);
-    joystick.setButton(8, 1);
-  }
+    if (frame->aux3 < 0) {
+      joystick.setButton(6, 1);
+      joystick.setButton(7, 0);
+      joystick.setButton(8, 0);
+    } else if (frame->aux3 > -5 && frame->aux3 < 5) {
+      joystick.setButton(6, 0);
+      joystick.setButton(7, 1);
+      joystick.setButton(8, 0);
+    } else {
+      joystick.setButton(6, 0);
+      joystick.setButton(7, 0);
+      joystick.setButton(8, 1);
+    }
 
-  if(frame->aux4 < 0) {
-    joystick.setButton(9, 1);
-    joystick.setButton(10, 0);
-    joystick.setButton(11, 0);
-  } else if(frame->aux4 > -5 && frame->aux4 < 5) {
-    joystick.setButton(9, 0);
-    joystick.setButton(10, 1);
-    joystick.setButton(11, 0);
-  } else {
-    joystick.setButton(9, 0);
-    joystick.setButton(10, 0);
-    joystick.setButton(11, 1);
+    if (frame->aux4 < 0) {
+      joystick.setButton(9, 1);
+      joystick.setButton(10, 0);
+      joystick.setButton(11, 0);
+    } else if (frame->aux4 > -5 && frame->aux4 < 5) {
+      joystick.setButton(9, 0);
+      joystick.setButton(10, 1);
+      joystick.setButton(11, 0);
+    } else {
+      joystick.setButton(9, 0);
+      joystick.setButton(10, 0);
+      joystick.setButton(11, 1);
+    }
   }
 
   // Log sent data
@@ -180,10 +211,18 @@ void setup() {
   sendSerialMsg(DEBUG, "CPPM reader initialized");
 
   // Set joystick ranges
-  joystick.setXAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);  // Throttle
-  joystick.setYAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);  // Pitch
-  joystick.setRxAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE); // Yaw
-  joystick.setRyAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE); // Roll
+  joystick.setThrottleRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);  // Throttle
+  joystick.setXAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);     // Roll
+  joystick.setYAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);     // Pitch
+  joystick.setRxAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);    // Yaw
+
+  // Set aux channel ranges, if applicable
+  if (!sendAuxChannelsToButttons) {
+    joystick.setZAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);     // Aux1
+    joystick.setRzAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);    // Aux2
+    joystick.setRyAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);    // Aux3
+    joystick.setSteeringRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);  // Aux4
+  }
   sendSerialMsg(DEBUG, "Joystick ranges set");
 
   // Start Joystick Emulation
@@ -195,7 +234,7 @@ void loop() {
   CPPMFrame frame;
 
   // Read newest CPPM frame, detect desyncs
-  if(!readCPPM(&frame)) {
+  if (!readCPPM(&frame)) {
     sendSerialMsg(CRITICAL, "CPPM signal not synchronised!");
 
     sendJoystickData(&frame);
