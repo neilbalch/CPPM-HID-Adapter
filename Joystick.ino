@@ -4,15 +4,15 @@
 //////////////////////////////////////////////////\
 //                  Constants                     |
 //////////////////////////////////////////////////|
-//|
-// Debug messages in serial monitor?            //|
-const bool LOG_DEBUG = false;  //|
-                               //|
-// Greatest possible magnitude of joystick axis //|
-const int JOYSTICK_RANGE = 1000;  //|
-// Send aux channels to HID buttons or HID axes?//|
-const bool sendAuxChannelsToButttons = false;  //|
-                                               //|
+
+// Debug messages in serial monitor?
+const bool LOG_DEBUG = false;
+
+// Greatest possible magnitude of joystick axis
+const int JOYSTICK_RANGE = 1000;
+// Send aux channels to HID buttons or HID axes?
+const bool sendAuxChannelsToButttons = false;
+
 ///////////////////////////////////////////////////
 
 // Enum type for different log levels
