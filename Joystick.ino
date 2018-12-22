@@ -11,7 +11,7 @@ const bool LOG_DEBUG = false;
 // Greatest possible magnitude of joystick axis
 const int JOYSTICK_RANGE = 1000;
 // Send aux channels to HID buttons or HID axes?
-const bool sendAuxChannelsToButttons = false;
+const bool sendButttonsToAuxChannels = false;
 
 ///////////////////////////////////////////////////
 
@@ -128,16 +128,13 @@ void sendJoystickData(CPPMFrame *frame) {
   joystick.setXAxis(frame->roll);
   joystick.setYAxis(frame->pitch);
   joystick.setRxAxis(frame->yaw);
-  joystick.setThrottle(frame->thr);
+  joystick.setZAxis(frame->thr);
 
   // Send aux channels
-  if (!sendAuxChannelsToButttons) {
-    joystick.setZAxis(frame->aux1);
-    joystick.setRzAxis(frame->aux2);
-    joystick.setRyAxis(frame->aux3);
-    joystick.setSteering(
-        frame->aux4);  // TODO(Neil): Figure out how to make this channel work
-                       // (currently not displayed in HID)
+  //TODO(Neil): Figure out how to submit the rest of the values...
+  if (!sendButttonsToAuxChannels) {
+    joystick.setRzAxis(frame->aux1);
+    joystick.setRyAxis(frame->aux2);
   } else {
     if (frame->aux1 < 0) {
       joystick.setButton(0, 1);
@@ -211,17 +208,15 @@ void setup() {
   sendSerialMsg(DEBUG, "CPPM reader initialized");
 
   // Set joystick ranges
-  joystick.setThrottleRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);  // Throttle
+  joystick.setZAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);     // Throttle
   joystick.setXAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);     // Roll
   joystick.setYAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);     // Pitch
   joystick.setRxAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);    // Yaw
 
   // Set aux channel ranges, if applicable
-  if (!sendAuxChannelsToButttons) {
-    joystick.setZAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);     // Aux1
-    joystick.setRzAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);    // Aux2
-    joystick.setRyAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);    // Aux3
-    joystick.setSteeringRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);  // Aux4
+  if (!sendButttonsToAuxChannels) {
+    joystick.setRzAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);    // Aux1
+    joystick.setRyAxisRange(-JOYSTICK_RANGE, JOYSTICK_RANGE);    // Aux2
   }
   sendSerialMsg(DEBUG, "Joystick ranges set");
 
