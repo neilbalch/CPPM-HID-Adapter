@@ -1,4 +1,4 @@
-#include <CPPM.h>
+#include <jm_CPPM.h>
 #include <Joystick.h>
 
 //////////////////////////////////////////////////\
@@ -87,6 +87,9 @@ void sendSerialMsg(LogLevel level, String message) {
 
 // Returns true if CPPM is synchronised, false if it isn't.
 bool readCPPM(CPPMFrame *frame) {
+  // Update class vars and check timeouts
+  CPPM.cycle();
+  
   if (CPPM.synchronized()) {
     // Values come in on a scale 1000us to 2000us, but we want them on a scale
     // of -1000us to 1000us
