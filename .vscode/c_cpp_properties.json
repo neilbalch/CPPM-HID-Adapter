@@ -5,7 +5,7 @@
             "includePath": [
                 "C:\\Program Files (x86)\\Arduino\\tools\\**",
                 "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
-                "C:\\Users\\neilb\\Documents\\Arduino\\libraries\\CPPM",
+                "C:\\Users\\neilb\\Documents\\Arduino\\libraries\\jm_CPPM",
                 "C:\\Users\\neilb\\Documents\\Arduino\\libraries\\Joystick"
             ],
             "forcedInclude": [
