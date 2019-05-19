@@ -3,6 +3,8 @@
     "system_error": "cpp",
     "chrono": "cpp",
     "array": "cpp",
-    "initializer_list": "cpp"
+    "initializer_list": "cpp",
+    "*.tcc": "cpp",
+    "ostream": "cpp"
   }
 }

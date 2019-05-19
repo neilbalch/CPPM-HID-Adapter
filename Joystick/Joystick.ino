@@ -28,16 +28,10 @@ struct CPPMFrame {
 
  public:
   // Analog sticks (values -1000 to 1000)
-  int pitch = 0;
-  int roll = 0;
-  int thr = 0;
-  int yaw = 0;
+  int pitch, roll, thr, yaw = 0;
 
   // Switches/dials (values -1000 to 1000, usually -1000, 0, or 1000)
-  int aux1 = 0;
-  int aux2 = 0;
-  int aux3 = 0;
-  int aux4 = 0;
+  int aux1, aux2, aux3, aux4 = 0;
 
   // Represents member vars in an easily printable form
   String toString() {
@@ -89,10 +83,10 @@ void sendSerialMsg(LogLevel level, String message) {
 bool readCPPM(CPPMFrame *frame) {
   // Update class vars and check timeouts
   CPPM.cycle();
-  
+
   if (CPPM.synchronized()) {
-    // Values come in on a scale 1000us to 2000us, but we want them on a scale
-    // of -1000us to 1000us
+    // Values come in on a scale of 1000µs to 2000µs, but we want them on a
+    // scale of -1000us to 1000
     frame->roll = 2 * (CPPM.read_us(CPPM_AILE) - 1500);
     frame->pitch = -2 * (CPPM.read_us(CPPM_ELEV) - 1500);  // Requires Inversion
     frame->thr = 2 * (CPPM.read_us(CPPM_THRO) - 1500);
