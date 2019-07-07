@@ -1,8 +1,8 @@
-#include <Arduino.h>
-#include <constants.h>
-
 #ifndef CPPMFRAME_H
 #define CPPMFRAME_H
+
+#include <Arduino.h>
+#include <constants.h>
 
 // Stores one set of CPPM channel values
 struct CPPMFrame {
