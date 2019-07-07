@@ -2,72 +2,15 @@
 #include <Joystick.h>
 #include <jm_CPPM.h>
 
-//------------------  Constants  ------------------|
-
-// Debug messages in serial monitor?
-const bool LOG_DEBUG = false;
-
-// Greatest possible magnitude of joystick axis
-const int JOYSTICK_RANGE = 1000;
-// Send aux channels to HID buttons or HID axes?
-const bool sendButttonsToAuxChannels = false;
-
-//-------------------------------------------------
-
-// Enum type for different log levels
-enum LogLevel { DEBUG, CRITICAL };
+#include <CPPMFrame.h>
+#include <constants.h>
+#include <helpers.h>
 
 // Create Joystick
 Joystick_ joystick;
 
-// Stores one set of CPPM channel values
-struct CPPMFrame {
- private:
-  bool alreadyMapped = false;
-
- public:
-  // Analog sticks (values -1000 to 1000)
-  int pitch, roll, thr, yaw = 0;
-
-  // Switches/dials (values -1000 to 1000, usually -1000, 0, or 1000)
-  int aux1, aux2, aux3, aux4 = 0;
-
-  // Represents member vars in an easily printable form
-  String toString() {
-    return "roll:" + (String)roll + "\tpitch:" + (String)pitch +
-           "\tthrottle:" + (String)thr + "\tyaw:" + (String)yaw +
-           "\taux1:" + (String)aux1 + "\taux2:" + (String)aux2 +
-           "\taux3:" + (String)aux3 + "\taux4:" + (String)aux4;
-  }
-
-  // Remap data so it matches proper range for joystick
-  void mapDataToJoystickRange() {
-    if (!alreadyMapped) {
-      // map-em
-      map(pitch, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      map(roll, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      map(thr, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      map(yaw, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      map(aux1, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      map(aux2, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      map(aux3, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      map(aux4, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-
-      alreadyMapped = true;
-    }
-  }
-};
-
 // Storage for previous frame of CPPM values
 CPPMFrame previousFrame;
-
-// Control output of debug messages
-void sendSerialMsg(LogLevel level, String message) {
-  if (LOG_DEBUG && level == DEBUG)
-    Serial.println((String)millis() + ": " + message);
-  if (level == CRITICAL)
-    Serial.println((String)millis() + ": CRITICAL! " + message);
-}
 
 // Returns true if CPPM is synchronised, false if it isn't.
 bool readCPPM(CPPMFrame *frame) {
