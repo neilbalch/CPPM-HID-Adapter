@@ -1,20 +1,65 @@
 {
     "configurations": [
         {
+            "name": "!!! WARNING !!! AUTO-GENERATED FILE, PLEASE DO NOT MODIFY IT AND USE https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags"
+        },
+        {
             "name": "Win32",
             "includePath": [
-                "C:\\Program Files (x86)\\Arduino\\tools\\**",
-                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
-                "C:\\Users\\neilb\\Documents\\Arduino\\libraries\\jm_CPPM",
-                "C:\\Users\\neilb\\Documents\\Arduino\\libraries\\Joystick"
+                "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/.piolibdeps/ArduinoJoystickLibrary/Joystick/src",
+                "C:/Users/neilb/.platformio/packages/framework-arduinoavr/cores/arduino",
+                "C:/Users/neilb/.platformio/packages/framework-arduinoavr/variants/sparkfun_promicro",
+                "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/.piolibdeps/ArduinoJoystickLibrary",
+                "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/.piolibdeps/jm_CPPM_ID1565",
+                "C:/Users/neilb/.platformio/lib/SimpleKalmanFilter_ID2904/src",
+                "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/EEPROM/src",
+                "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/HID/src",
+                "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SPI/src",
+                "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SoftwareSerial/src",
+                "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
+                "C:/Users/neilb/.platformio/packages/tool-unity",
+                "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/include",
+                "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/src",
+                ""
             ],
-            "forcedInclude": [
-                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "${workspaceRoot}/.vscode/.browse.c_cpp.db",
+                "path": [
+                    "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/.piolibdeps/ArduinoJoystickLibrary/Joystick/src",
+                    "C:/Users/neilb/.platformio/packages/framework-arduinoavr/cores/arduino",
+                    "C:/Users/neilb/.platformio/packages/framework-arduinoavr/variants/sparkfun_promicro",
+                    "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/.piolibdeps/ArduinoJoystickLibrary",
+                    "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/.piolibdeps/jm_CPPM_ID1565",
+                    "C:/Users/neilb/.platformio/lib/SimpleKalmanFilter_ID2904/src",
+                    "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/EEPROM/src",
+                    "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/HID/src",
+                    "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SPI/src",
+                    "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SoftwareSerial/src",
+                    "C:/Users/neilb/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
+                    "C:/Users/neilb/.platformio/packages/tool-unity",
+                    "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/include",
+                    "c:/Users/neilb/Documents/GitHub/CPPM-HID-Adapter/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=30607",
+                "ARDUINO_AVR_PROMICRO16",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10805",
+                "USB_VID=0x1B4F",
+                "USB_PID=0x9206",
+                "USB_PRODUCT=\"SparkFun Pro Micro\"",
+                "USB_MANUFACTURER=\"SparkFun\"",
+                "__AVR_ATmega32U4__",
+                ""
             ],
-            "intelliSenseMode": "msvc-x64",
-            "compilerPath": "/usr/bin/gcc",
+            "intelliSenseMode": "clang-x64",
             "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cppStandard": "c++11",
+            "compilerPath": "\"C:/Users/neilb/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe\" -mmcu=atmega32u4"
         }
     ],
     "version": 4
