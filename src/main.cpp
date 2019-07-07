@@ -1,10 +1,9 @@
 #include <Arduino.h>
-#include <Joystick.h>
-#include <jm_CPPM.h>
-
 #include <CPPMFrame.h>
+#include <Joystick.h>
 #include <constants.h>
 #include <helpers.h>
+#include <jm_CPPM.h>
 
 // Create Joystick
 Joystick_ joystick;
