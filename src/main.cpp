@@ -53,15 +53,6 @@ struct CPPMFrame {
       map(aux3, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
       map(aux4, -1000, 1000, -JOYSTICK_RANGE, JOYSTICK_RANGE);
 
-      // Make doubly sure they're within the right range
-      constrain(pitch, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      constrain(roll, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      constrain(thr, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      constrain(yaw, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      constrain(aux1, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      constrain(aux2, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      constrain(aux3, -JOYSTICK_RANGE, JOYSTICK_RANGE);
-      constrain(aux4, -JOYSTICK_RANGE, JOYSTICK_RANGE);
       alreadyMapped = true;
     }
   }
