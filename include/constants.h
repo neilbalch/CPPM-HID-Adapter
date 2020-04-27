@@ -2,7 +2,7 @@
 #define CONSTANTS_H
 
 // Debug messages in serial monitor?
-const bool LOG_DEBUG = false;
+const bool LOG_DEBUG = true;
 
 // Greatest possible magnitude of joystick axis
 const int JOYSTICK_RANGE = 1000;

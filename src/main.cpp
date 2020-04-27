@@ -19,14 +19,14 @@ bool readCPPM(CPPMFrame *frame) {
   if (CPPM.synchronized()) {
     // Values come in on a scale of 1000µs to 2000µs, but we want them on a
     // scale of -1000us to 1000
-    frame->roll = 2 * (CPPM.read_us(CPPM_AILE) - 1500);
-    frame->pitch = -2 * (CPPM.read_us(CPPM_ELEV) - 1500);  // Requires Inversion
-    frame->thr = 2 * (CPPM.read_us(CPPM_THRO) - 1500);
-    frame->yaw = 2 * (CPPM.read_us(CPPM_RUDD) - 1500);
-    frame->aux1 = 2 * (CPPM.read_us(CPPM_GEAR) - 1500);
-    frame->aux2 = 2 * (CPPM.read_us(CPPM_AUX1) - 1500);
-    frame->aux3 = 2 * (CPPM.read_us(CPPM_AUX2) - 1500);
-    frame->aux4 = 2 * (CPPM.read_us(CPPM_AUX3) - 1500);
+    frame->roll = constrain((CPPM.read_us(CPPM_AILE) - 1000), 0, 1000);
+    frame->pitch = constrain((CPPM.read_us(CPPM_ELEV) - 1000), 0, 5000);
+    frame->thr = constrain((CPPM.read_us(CPPM_THRO) - 1000), 0, 1000);
+    frame->yaw = constrain((CPPM.read_us(CPPM_RUDD) - 1000), 0, 1000);
+    frame->aux1 = constrain((CPPM.read_us(CPPM_GEAR) - 1000), 0, 1000);
+    frame->aux2 = constrain((CPPM.read_us(CPPM_AUX1) - 1000), 0, 1000);
+    frame->aux3 = constrain((CPPM.read_us(CPPM_AUX2) - 1000), 0, 1000);
+    frame->aux4 = constrain((CPPM.read_us(CPPM_AUX3) - 1000), 0, 1000);
 
     // Log read data
     sendSerialMsg(DEBUG, "CPPM Read: " + frame->toString());
@@ -125,7 +125,7 @@ void sendJoystickData(CPPMFrame *frame) {
   }
 
   // Log sent data
-  sendSerialMsg(DEBUG, "Joystick Data Sent: " + frame->toString());
+  // sendSerialMsg(DEBUG, "Joystick Data Sent: " + frame->toString());
 }
 
 void setup() {
@@ -163,10 +163,10 @@ void loop() {
 
     sendJoystickData(&frame);
   } else {
-    sendSerialMsg(DEBUG, "New CPPM frame read");
+    // sendSerialMsg(DEBUG, "New CPPM frame read");
 
     sendJoystickData(&frame);
-    sendSerialMsg(DEBUG, "New CPPM frame sent to Joystick HID");
+    // sendSerialMsg(DEBUG, "New CPPM frame sent to Joystick HID");
   }
 
   previousFrame = frame;
